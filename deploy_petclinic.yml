@@ -1,0 +1,26 @@
+---
+- name: Deploy Spring PetClinic locally on macOS
+  hosts: app_servers
+  become: true
+
+  vars:
+    jar_local_path: "./spring-petclinic-3.4.0-SNAPSHOT.jar"
+    jar_remote_path: "/opt/spring-petclinic.jar"
+
+  tasks:
+    - name: Utwórz katalog /opt (jeśli nie istnieje)
+      file:
+        path: /opt
+        state: directory
+        mode: '0755'
+
+    - name: Skopiuj plik .jar do /opt
+      copy:
+        src: "{{ jar_local_path }}"
+        dest: "{{ jar_remote_path }}"
+        mode: '0755'
+
+    - name: Uruchom aplikację jako proces w tle
+      shell: "nohup java -jar {{ jar_remote_path }} > /opt/petclinic.log 2>&1 &"
+      args:
+        chdir: /opt
